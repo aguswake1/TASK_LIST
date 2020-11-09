@@ -5,7 +5,7 @@ class Config:  # configuraciones globales
 
 class DevelopmentConfig(Config):  # config para entorno de desarrollo
     DEBUG = True
-    SQLACHEMY_DATABASE_URI = 'mysql://root:root@localhost/TASKLIST'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:root@localhost/TASK_LIST'
 
 
 config = {
