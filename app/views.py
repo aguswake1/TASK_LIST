@@ -2,7 +2,9 @@
 from flask import Blueprint  # This class allow us to do a modularized app
 # for rendering templates, for post method
 from flask import render_template, request
-from .forms import LoginForm
+from .models import User
+from .forms import LoginForm, RegisterForm
+
 
 page = Blueprint('page', __name__)
 
@@ -19,9 +21,22 @@ def index():
 
 
 @page.route('/login', methods=['GET', 'POST'])
-def login():
+def signIn():
     if request.method == 'POST' and LoginForm(request.form).validate():
         print(LoginForm(request.form).username.data)
         print(LoginForm(request.form).password.data)
         print("nueva sesión creada!")
     return render_template('auth/login.html', title='Iniciar Sesión', form=LoginForm(request.form))
+
+
+@page.route('/register', methods=['GET', 'POST'])
+def signUp():
+    form = RegisterForm(request.form)
+
+    if request.method == 'POST':
+        if form.validate():
+            user_information = User.create_element(form.username.data, form.password.data, form.email.data)
+            print("usuario crea2")
+            print(user_information.id)
+
+    return render_template('auth/register.html', title='Registro', form=form)

@@ -1,11 +1,9 @@
 import datetime
-from flask_sqlalchemy import SQLAlchemy
-
-
-db = SQLAlchemy()
+from . import db
 
 
 class User(db.Model):  # representación de tabla de usuarios
+    __tablename__ = 'users'
     # columnas
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -15,3 +13,12 @@ class User(db.Model):  # representación de tabla de usuarios
 
     def __str__(self):
         return self.username
+
+    @classmethod
+    def create_element(cls, username, password, email):
+        user = User(username=username, password=password, email=email)
+
+        db.session.add(user)
+        db.session.commit()
+
+        return user
