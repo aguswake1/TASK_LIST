@@ -17,7 +17,7 @@ login_manager = LoginManager()
 
 
 from .views import page  # importamos las rutas
-from .models import User
+from .models import User, Task
 
 
 def create_app(config):

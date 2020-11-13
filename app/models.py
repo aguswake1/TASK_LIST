@@ -5,7 +5,7 @@ from . import db
 
 
 class User(db.Model, UserMixin):  # representación de tabla de usuarios
-    __tablename__ = 'users'
+    __tablename__ = 'users'  # delete from users para eliminar
     # columnas
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
