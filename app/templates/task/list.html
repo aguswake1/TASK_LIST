@@ -1,7 +1,7 @@
 {% extends 'layout.html'%}
 
 {% block container %}
-<div class="">
+<div class="d-inline-block">
     <br><h2>Listado de tareas</h2> <br>
     <a href="{{ url_for('.new_task') }}">Nueva tarea</a>
 </div>
@@ -17,14 +17,30 @@
     <tbody>
         {% for task in tasks %}
         <tr>
-            <td>{{ task.title }}</td>
+            <td>
+                <a href="{{ url_for('.seeing_task', task_id=task.id) }}">{{ task.title }}</a>
+            </td>
             <td>{{ task.cut_description }}</td>
             <td>
                 <a href="{{ url_for('.editar', task_id=task.id) }}" class="btn btn-primary">Editar</a>
-                <a href="#" class="btn btn-danger">Eliminar</a>
+                <a href="{{ url_for('.delete_task', task_id=task.id) }}" class="btn btn-danger">Eliminar</a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+<nav>
+    <ul class="pagination">
+        {% if pagination.has_prev %}
+            <li class="page-item">
+                <a href="{{ url_for('.task', page=page-1) }}" class="page-link">Anterior</a>
+            </li>
+        {% endif %}
+        {% if pagination.has_next %}
+            <li class="page-item">
+                <a href="{{ url_for('.task', page=page+1) }}" class="page-link">Siguiente</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
 {% endblock %}

@@ -12,7 +12,7 @@ class User(db.Model, UserMixin):  # representación de tabla de usuarios
     encrypted_password = db.Column(db.String(95), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.now())
-    tasks = db.relationship('Task')
+    tasks = db.relationship('Task', lazy='dynamic')
 
     def verify_password(self, password):
         return check_password_hash(self.encrypted_password, password)
@@ -61,8 +61,8 @@ class Task(db.Model):
 
     @property
     def cut_description(self):
-        if len(self.description) > 50:
-            return self.description[0:80] + "..."
+        if len(self.description) > 60:
+            return self.description[0:60] + "..."
         return self.description
 
     @classmethod
@@ -91,3 +91,15 @@ class Task(db.Model):
         db.session.commit()
 
         return task
+
+    @classmethod
+    def delete_element(cls, id):
+        task = Task.get_by_id(id)
+
+        if task is None:
+            return False
+
+        db.session.delete(task)
+        db.session.commit()
+
+        return True

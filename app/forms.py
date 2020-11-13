@@ -72,7 +72,7 @@ class RegisterForm(Form):
 
 class TaskForm(Form):
     title = StringField('Título', [
-                        validators.Length(min=5, max=22,
+                        validators.Length(min=5, max=50,
                                           message="Longitud fuera de rango"),
                         validators.DataRequired(
                             message="El título es obligatorio")

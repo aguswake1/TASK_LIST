@@ -1,11 +1,12 @@
 # Implementing MVC structure. Here we are going to find the different routes.
-from flask import Blueprint, abort  # This class allow us to do a modularized app
+from flask import Blueprint  # This class allow us to do a modularized app
 # for rendering templates, for post method
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from .models import User, Task
 from .forms import LoginForm, RegisterForm, TaskForm
 from . import login_manager
+from .email import welcome_mail
 
 page = Blueprint('page', __name__)
 
@@ -37,11 +38,13 @@ def register():
         if form.validate():
             user = User.create_element(
                 form.username.data, form.password.data, form.email.data)
-            flash('Registro exitoso!')
+            flash('Registro exitoso!', 'success')
             login_user(user)
+            welcome_mail(user)
             return redirect(url_for('.task'))
 
-    return render_template('auth/register.html', title='Registro', form=form)
+    return render_template('auth/register.html', title='Registro', form=form,
+                           active='register')
 
 
 @page.route('/login', methods=['GET', 'POST'])
@@ -55,31 +58,42 @@ def login():
         if user and user.verify_password(form.password.data):
             # la función recibe un objeto de tipo UserMixin
             login_user(user)
-            flash('Inicio de sesión exitoso.')
+            flash('Inicio de sesión exitoso.', 'success')
             return redirect(url_for('.task'))
         else:
             flash('Usuario o contraseña incorrectos.', 'error')
     return render_template('auth/login.html', title='Iniciar Sesión',
-                           form=form)
+                           form=form, active='login')
 
 
 @page.route('/logout')
 def logout():
     # Función de la libreria flask_login
     logout_user()
-    flash('Sesión cerrada correctamente')
+    flash('Sesión cerrada correctamente', 'success')
     return redirect(url_for('.login'))
 
 
-@page.route('/task')
+@page.route('/tasks')
+@page.route('/tasks/<int:page>')
 @login_required
-def task():
+def task(page=1, per_page=6):
     # obtenemos todas las tareas del usuario (relación uno a muchos)
-    tasks = current_user.tasks
-    return render_template('task/list.html', title='Tareas', tasks=tasks)
+    pagination = current_user.tasks.paginate(page, per_page=per_page)
+    tasks = pagination.items
+
+    return render_template('task/list.html', title='Tareas', tasks=tasks,
+                           pagination=pagination, page=page, active='task')
 
 
-@page.route('/task/new', methods=['GET', 'POST'])
+@page.route('/tasks/show/<int:task_id>')
+def seeing_task(task_id):
+    task = Task.query.get_or_404(task_id)
+
+    return render_template('task/show.html', title='Tarea', task=task)
+
+
+@page.route('/tasks/new', methods=['GET', 'POST'])
 @login_required
 def new_task():
     form = TaskForm(request.form)
@@ -88,12 +102,13 @@ def new_task():
         task = Task.create_element(
             form.title.data, form.description.data, current_user.id)
         if task:
-            flash("Tarea creada con éxito")
+            flash("Tarea creada con éxito", 'success')
             return redirect(url_for('.task'))
-    return render_template('task/new.html', title='Nueva Tarea', form=form)
+    return render_template('task/new.html', title='Nueva Tarea', form=form,
+                           active='new_task')
 
 
-@page.route('/task/edit/<int:task_id>', methods=['GET', 'POST'])
+@page.route('/tasks/edit/<int:task_id>', methods=['GET', 'POST'])
 @login_required
 def editar(task_id):
     task = Task.query.get_or_404(task_id)
@@ -103,10 +118,24 @@ def editar(task_id):
     form = TaskForm(request.form, obj=task)
 
     if request.method == 'POST' and form.validate():
-        task = Task.save_edit(Task.id, form.title.data, form.description.data)
+        task = Task.save_edit(task.id, form.title.data, form.description.data)
 
         if task:
-            flash("Tarea Actualizada")
+            flash("Tarea Actualizada", 'success')
             return redirect(url_for('.task'))
 
     return render_template('task/edit.html', title='Editar Tarea', form=form)
+
+
+@page.route('/tasks/delete/<int:task_id>', methods=['GET', 'POST'])
+@login_required
+def delete_task(task_id):
+    task = Task.query.get_or_404(task_id)
+
+    if task.user_id != current_user.id:
+        abort(404)
+
+    if Task.delete_element(task.id):
+        flash("Tarea Eliminada")
+
+    return redirect(url_for('.task'))
