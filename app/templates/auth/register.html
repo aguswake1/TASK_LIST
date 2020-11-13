@@ -3,11 +3,11 @@
 
 {% block container %}
 <div class="col-md-12 col-md-offset-1">
-    <br><h3>Sign Up</h3> <br>
+    <br><h3>Sign In</h3>
     <form class="" method="post">
 
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"\>
-
+            {{ render_field(form.honeypot) }}
         <div class="form-group">
             {{ render_field(form.username, class='form-control', placeholder="Nombre De Usuario") }}
         </div>

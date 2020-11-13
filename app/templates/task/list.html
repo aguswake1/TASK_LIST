@@ -1,0 +1,30 @@
+{% extends 'layout.html'%}
+
+{% block container %}
+<div class="">
+    <br><h2>Listado de tareas</h2> <br>
+    <a href="{{ url_for('.new_task') }}">Nueva tarea</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Título</th>
+            <th scope="col">Descripción</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task.title }}</td>
+            <td>{{ task.cut_description }}</td>
+            <td>
+                <a href="{{ url_for('.editar', task_id=task.id) }}" class="btn btn-primary">Editar</a>
+                <a href="#" class="btn btn-danger">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

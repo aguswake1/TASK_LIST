@@ -3,20 +3,20 @@
 
 {% block container %}
 <div class="col-md-12 col-md-offset-1">
-    <br><h3>Log In</h3><br>
+    <br><h3>Nueva tarea:</h3><br>
     <form class="" method="post">
 
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"\>
 
         <div class="form-group">
-            {{ render_field(form.username, class='form-control', placeholder="pepito123") }}
+            {{ render_field(form.title, class='form-control', placeholder="Título") }}
         </div>
 
         <div class="form-group">
-            {{ render_field(form.password, class='form-control', placeholder="contraseña") }}
+            {{ render_field(form.description, class='form-control', placeholder="...") }}
         </div>
 
-        <button type="submit" class="btn btn-primary">Log In</button>
+        <button type="submit" class="btn btn-primary">Crear Tarea</button>
 
     </form>
 </div>

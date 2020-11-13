@@ -1,15 +1,29 @@
 import datetime
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 
 
-class User(db.Model):  # representación de tabla de usuarios
+class User(db.Model, UserMixin):  # representación de tabla de usuarios
     __tablename__ = 'users'
     # columnas
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(93), nullable=False)
+    encrypted_password = db.Column(db.String(95), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.now())
+    tasks = db.relationship('Task')
+
+    def verify_password(self, password):
+        return check_password_hash(self.encrypted_password, password)
+
+    @property
+    def password(self):
+        pass
+
+    @password.setter
+    def password(self, value):
+        self.encrypted_password = generate_password_hash(value)
 
     def __str__(self):
         return self.username
@@ -22,3 +36,58 @@ class User(db.Model):  # representación de tabla de usuarios
         db.session.commit()
 
         return user
+
+    @classmethod
+    def get_by_nickname(cls, username):
+        return User.query.filter_by(username=username).first()
+
+    @classmethod
+    def get_by_email(cls, email):
+        return User.query.filter_by(email=email).first()
+
+    @classmethod
+    def get_by_id(cls, id):
+        return User.query.filter_by(id=id).first()
+
+
+class Task(db.Model):
+    __tablename__ = 'tasks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(50))
+    description = db.Column(db.Text())
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now())
+
+    @property
+    def cut_description(self):
+        if len(self.description) > 50:
+            return self.description[0:80] + "..."
+        return self.description
+
+    @classmethod
+    def create_element(cls, title, description, user_id):
+        task = Task(title=title, description=description, user_id=user_id)
+
+        db.session.add(task)
+        db.session.commit()
+
+        return task
+
+    @classmethod
+    def get_by_id(cls, id):
+        return Task.query.filter_by(id=id).first()
+
+    @classmethod
+    def save_edit(cls, id, title, description):
+        task = Task.get_by_id(id)
+
+        if task is None:
+            return False
+
+        task.title = title
+        task.description = description
+        db.session.add(task)
+        db.session.commit()
+
+        return task
