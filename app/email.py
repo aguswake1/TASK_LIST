@@ -18,3 +18,5 @@ def welcome_mail(user):
     message.html = render_template('email/welcome.html', user=user)
     thread = Thread(target=send_async_mail, args=[message])
     thread.start()
+
+# test
